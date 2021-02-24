@@ -1,31 +1,22 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Web3Context } from 'contexts/web3Context';
 import { formatEther } from '@ethersproject/units';
-import { Button, Form, Input, Space, Typography, notification } from 'antd';
+import { Button, Card, Form, Input, Typography } from 'antd';
 
 export default function Balance() {
   const { web3Context } = useContext(Web3Context);
-  const { account, library } = web3Context;
-  const { Title, Text } = Typography;
+  const { account, chainId, library } = web3Context;
+  const [balance, setBalance] = useState();
+  const { Title } = Typography;
   const [form] = Form.useForm();
 
-  useEffect(() => {
+  useEffect(() => form.setFieldsValue({ input: account }), [form, account]);
+  useEffect(() => setBalance(null), [account, chainId]);
+
+  const onFinish = async ({ input }) => {
     if (!library) return;
-    const getBalance = async () => {
-      console.log('library', library);
-      const balance = await library.getBalance(account);
-      console.log(formatEther(balance));
-    };
-    getBalance();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account, library]); // we only want to run on mount
-
-  useEffect(() => {
-    form.setFieldsValue({ account });
-  }, [form, account]);
-
-  const onFinish = (values: any) => {
-    console.log('success', values);
+    const response = await library.getBalance(input);
+    setBalance(response);
   };
 
   return (
@@ -38,10 +29,10 @@ export default function Balance() {
         textAlign: 'center',
       }}
     >
-      <Title level={2}>Account number</Title>
-      <Form form={form} initialValues={account} onFinish={onFinish}>
+      <Title level={2}>Account</Title>
+      <Form form={form} initialValues={{ input: account }} onFinish={onFinish} style={{ margin: '32px 0' }}>
         <div style={{ margin: '32px 0' }}>
-          <Form.Item name='account' rules={[{ required: true }]}>
+          <Form.Item name='input' rules={[{ required: true }]}>
             <Input style={{ fontSize: '1.3em' }} size='large' placeholder='0xabcde...' autoComplete='off' />
           </Form.Item>
         </div>
@@ -51,6 +42,11 @@ export default function Balance() {
           </Button>
         </Form.Item>
       </Form>
+      {balance && account && (
+        <Card size='default'>
+          <Title level={4}>{formatEther(balance)} ETH</Title>
+        </Card>
+      )}
     </div>
   );
 }
