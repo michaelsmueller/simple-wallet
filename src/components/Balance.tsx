@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Web3Context } from 'contexts/web3Context';
 import { formatEther } from '@ethersproject/units';
-import { Button, Card, Form, Input, Typography } from 'antd';
+import { Button, Card, Form, Input, Typography, notification } from 'antd';
 
 export default function Balance() {
   const { web3Context } = useContext(Web3Context);
@@ -13,10 +13,17 @@ export default function Balance() {
   useEffect(() => form.setFieldsValue({ input: account }), [form, account]);
   useEffect(() => setBalance(null), [account, chainId]);
 
-  const onFinish = async ({ input }) => {
-    if (!library) return;
-    const response = await library.getBalance(input);
-    setBalance(response);
+  const handleSubmit = async ({ input }) => {
+    if (!library || !account) {
+      notification.error({ message: 'Please connect wallet' });
+      return;
+    }
+    try {
+      const response = await library.getBalance(input);
+      setBalance(response);
+    } catch (error) {
+      notification.error({ message: `Invalid account number` });
+    }
   };
 
   return (
@@ -30,7 +37,7 @@ export default function Balance() {
       }}
     >
       <Title level={2}>Account</Title>
-      <Form form={form} initialValues={{ input: account }} onFinish={onFinish} style={{ margin: '32px 0' }}>
+      <Form form={form} initialValues={{ input: account }} onFinish={handleSubmit} style={{ margin: '32px 0' }}>
         <div style={{ margin: '32px 0' }}>
           <Form.Item name='input' rules={[{ required: true }]}>
             <Input style={{ fontSize: '1.3em' }} size='large' placeholder='0xabcde...' autoComplete='off' />
