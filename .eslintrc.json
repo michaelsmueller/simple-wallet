@@ -6,7 +6,7 @@
     "plugin:jsx-a11y/recommended",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier/@typescript-eslint",
+    "prettier",
     "plugin:prettier/recommended"
   ],
   "parserOptions": {
@@ -32,5 +32,9 @@
     "node": true,
     "es6": true
   },
-  "rules": {}
+  "rules": {
+    "react/prop-types": ["off"],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off"
+  }
 }
